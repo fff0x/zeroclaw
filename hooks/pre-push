@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+# Block pushes to protected canonical branches (Radicle + any remote).
+set -eu
+
+protected_re='^(refs/heads/)?(main|next)$'
+
+while read -r local_ref local_sha remote_ref remote_sha; do
+  [[ -z "${remote_ref:-}" ]] && continue
+  case "$remote_ref" in
+    refs/heads/main|refs/heads/next|main|next)
+      echo "radicle-guard: refusing push to protected branch '${remote_ref}'" >&2
+      echo "Open a patch: git push rad -o patch.message='…' HEAD:refs/patches" >&2
+      exit 1
+      ;;
+    refs/patches|refs/patches/*)
+      ;;
+    refs/heads/*)
+      branch="${remote_ref#refs/heads/}"
+      if printf '%s' "$branch" | grep -qE '^(main|next)$'; then
+        echo "radicle-guard: refusing push to protected branch '${branch}'" >&2
+        exit 1
+      fi
+      ;;
+  esac
+done
+
+exit 0

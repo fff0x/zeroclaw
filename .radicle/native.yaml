@@ -1,0 +1,11 @@
+# Radicle CI build definition — executed by radicle-native-ci inside the
+# radicle/ci-broker container. Replaces the central SourceHut images/.build.yml for
+# this repo. Committed in the (public) repo, so it carries NO secrets — registry and
+# cosign credentials come from the broker's environment.
+#
+# VERIFY the schema (keys: steps/run) against the installed radicle-native-ci version:
+#   https://lib.rs/crates/radicle-native-ci
+---
+steps:
+  - name: build-push-sign
+    run: bash .radicle/build.sh

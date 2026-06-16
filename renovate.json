@@ -1,0 +1,24 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended",
+    ":dependencyDashboard"
+  ],
+  "dependencyDashboard": true,
+  "dependencyDashboardTitle": "Renovate Dashboard",
+  "platformAutomerge": true,
+  "ignoreTests": true,
+  "prConcurrentLimit": 0,
+  "assignees": [],
+  "reviewers": [],
+  "ignoreDeps": [],
+  "packageRules": [
+    {
+      "description": "Group ZeroClaw image and embedded tool bumps",
+      "matchFileNames": ["Dockerfile"],
+      "matchManagers": ["regex", "dockerfile"],
+      "groupName": "zeroclaw-image",
+      "labels": ["zeroclaw"]
+    }
+  ]
+}

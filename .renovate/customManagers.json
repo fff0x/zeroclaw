@@ -1,0 +1,104 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "customManagers": [
+    {
+      "customType": "regex",
+      "description": "ZeroClaw base image version (ARG pin; FROM uses variable)",
+      "managerFilePatterns": ["/^Dockerfile$/"],
+      "matchStrings": ["ARG ZEROCLAW_V=(?<currentValue>v[\\d.]+)"],
+      "depNameTemplate": "ghcr.io/zeroclaw-labs/zeroclaw",
+      "datasourceTemplate": "docker",
+      "versioningTemplate": "loose"
+    },
+    {
+      "customType": "regex",
+      "description": "ZeroClaw Dockerfile annotated ARG version pins",
+      "managerFilePatterns": ["/^Dockerfile$/"],
+      "matchStrings": [
+        "#\\s*renovate:\\s*datasource=(?<datasource>\\S+)\\s+depName=(?<depName>\\S+)(?:\\s+\\S+)*\\nARG \\w+=(?<currentValue>[^\\n]+)"
+      ],
+      "datasourceTemplate": "{{#if datasource}}{{{datasource}}}{{else}}docker{{/if}}"
+    },
+    {
+      "customType": "regex",
+      "description": "ZeroClaw kubectl version",
+      "managerFilePatterns": ["/^Dockerfile$/"],
+      "matchStrings": ["ARG KUBECTL_V=(?<currentValue>v[\\d.]+)"],
+      "depNameTemplate": "kubernetes/kubernetes",
+      "datasourceTemplate": "github-releases"
+    },
+    {
+      "customType": "regex",
+      "description": "ZeroClaw Flux CLI version",
+      "managerFilePatterns": ["/^Dockerfile$/"],
+      "matchStrings": ["ARG FLUX_V=(?<currentValue>v[\\d.]+)"],
+      "depNameTemplate": "fluxcd/flux2",
+      "datasourceTemplate": "github-releases"
+    },
+    {
+      "customType": "regex",
+      "description": "ZeroClaw Helm version",
+      "managerFilePatterns": ["/^Dockerfile$/"],
+      "matchStrings": ["ARG HELM_V=(?<currentValue>v[\\d.]+)"],
+      "depNameTemplate": "helm/helm",
+      "datasourceTemplate": "github-releases"
+    },
+    {
+      "customType": "regex",
+      "description": "ZeroClaw Kustomize version",
+      "managerFilePatterns": ["/^Dockerfile$/"],
+      "matchStrings": ["ARG KUSTOMIZE_V=(?<currentValue>v[\\d.]+)"],
+      "depNameTemplate": "kubernetes-sigs/kustomize",
+      "datasourceTemplate": "github-releases",
+      "extractVersionTemplate": "^kustomize/(?<version>.*)$"
+    },
+    {
+      "customType": "regex",
+      "description": "ZeroClaw yq version",
+      "managerFilePatterns": ["/^Dockerfile$/"],
+      "matchStrings": ["ARG YQ_V=(?<currentValue>v[\\d.]+)"],
+      "depNameTemplate": "mikefarah/yq",
+      "datasourceTemplate": "github-releases"
+    },
+    {
+      "customType": "regex",
+      "description": "ZeroClaw SOPS version",
+      "managerFilePatterns": ["/^Dockerfile$/"],
+      "matchStrings": ["ARG SOPS_V=(?<currentValue>v[\\d.]+)"],
+      "depNameTemplate": "getsops/sops",
+      "datasourceTemplate": "github-releases"
+    },
+    {
+      "customType": "regex",
+      "description": "ZeroClaw jq version",
+      "managerFilePatterns": ["/^Dockerfile$/"],
+      "matchStrings": ["ARG JQ_V=(?<currentValue>jq-[\\d.]+)"],
+      "depNameTemplate": "jqlang/jq",
+      "datasourceTemplate": "github-releases"
+    },
+    {
+      "customType": "regex",
+      "description": "ZeroClaw skopeo version",
+      "managerFilePatterns": ["/^Dockerfile$/"],
+      "matchStrings": ["ARG SKOPEO_V=(?<currentValue>v[\\d.]+)"],
+      "depNameTemplate": "lework/skopeo-binary",
+      "datasourceTemplate": "github-releases"
+    },
+    {
+      "customType": "regex",
+      "description": "ZeroClaw crane version",
+      "managerFilePatterns": ["/^Dockerfile$/"],
+      "matchStrings": ["ARG CRANE_V=(?<currentValue>v[\\d.]+)"],
+      "depNameTemplate": "google/go-containerregistry",
+      "datasourceTemplate": "github-releases"
+    },
+    {
+      "customType": "regex",
+      "description": "ZeroClaw cosign version",
+      "managerFilePatterns": ["/^Dockerfile$/"],
+      "matchStrings": ["ARG COSIGN_V=(?<currentValue>v[\\d.]+)"],
+      "depNameTemplate": "sigstore/cosign",
+      "datasourceTemplate": "github-releases"
+    }
+  ]
+}

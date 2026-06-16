@@ -1,0 +1,11 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "packageRules": [
+    {
+      "description": "Group ZeroClaw CLI tool versions together",
+      "matchFileNames": ["Dockerfile"],
+      "matchManagers": ["regex"],
+      "groupName": "zeroclaw-cli-tools"
+    }
+  ]
+}

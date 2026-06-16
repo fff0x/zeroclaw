@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1
-# Dockerfile version: 0.0.17
+# Dockerfile version: 0.0.18
 
 # Image identity (read by .radicle/build.sh) — published as ${CAT}/${APP}
 ARG CAT=zeroclaw

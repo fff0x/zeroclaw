@@ -47,7 +47,7 @@ cosign public-key --key "${COSIGN_KEY}" > "${COSIGN_PUB_KEY}"
 echo ">> building ${IMG} for: ${ARCHES[*]}"
 manifests=()
 for arch in "${ARCHES[@]}"; do
-  buildah bud --arch "${arch}" --layers -f Dockerfile -t "${REGISTRY}/${IMG}:build-${arch}" .
+  buildah bud --platform "linux/${arch}" --layers -f Dockerfile -t "${REGISTRY}/${IMG}:build-${arch}" .
   buildah push --creds "${CREDS}" "${REGISTRY}/${IMG}:build-${arch}" "docker://${REGISTRY}/${IMG}:build-${arch}"
   manifests+=(--manifest "${REGISTRY}/${IMG}:build-${arch}")
 done

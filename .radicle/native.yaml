@@ -1,7 +1,9 @@
 # Radicle CI run spec for radicle-native-ci (0.11).
 # Schema: a single `shell` field; the snippet runs under bash with
-# `set -xeuo pipefail` in the checked-out repo root. deny_unknown_fields —
-# no other keys (no steps/name/run).
-# Builds + pushes + signs the image (.radicle/build.sh).
+# `set -xeuo pipefail` in the checked-out repo root. deny_unknown_fields.
+#
+# `ci-build` is the generic build entrypoint baked into the radicle/ci-broker image
+# (single source of truth): it auto-detects this repo as a container image (Dockerfile
+# with ARG CAT=/APP=) and builds + pushes + signs it. No per-repo build.sh.
 shell: |
-  bash .radicle/build.sh
+  ci-build

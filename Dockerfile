@@ -6,12 +6,15 @@ ARG CAT=zeroclaw
 ARG APP=zeroclaw
 
 # renovate: datasource=docker depName=ghcr.io/zeroclaw-labs/zeroclaw versioning=loose
-ARG ZEROCLAW_V=v0.8.0
-# v0.8.0 (stable, 2026-06-12) is a BREAKING release: schema V3 + per-agent on-disk layout.
-# It carries the b3e0719 fix (runtime_profiles.<p>.strict_tool_parsing). The migration of the
-# config + deployment layout is documented in docs/ZEROCLAW.md — do NOT bump this
-# in isolation. The v0.8.0-debian image is multi-arch (amd64 + arm64), so the FROM below resolves
-# on the arm64 Turing-RK1 cluster. Do NOT use the floating `beta`/`beta-debian` tag (stale).
+ARG ZEROCLAW_V=v0.8.1
+# v0.8.1 (2026-06-19) is a PATCH release on the v0.8.x line — schema stays V3 (no `config migrate`).
+# It keeps the b3e0719 fix (runtime_profiles.<p>.strict_tool_parsing) and adds the v0.8.1 doctor
+# multi-agent fix (#7544, closes the SOUL.md/AGENTS.md false-positive — Radicle issue aa4931e).
+# The v0.8.1-debian image is multi-arch (amd64 + arm64), verified, so the FROM below resolves on the
+# arm64 Turing-RK1 cluster. Do NOT use the floating `beta`/`beta-debian` tag (stale).
+# IRC: v0.8.1 release images STILL ship WITHOUT the `channel-irc` feature (verified 2026-06-22 via
+# `zeroclaw channel list` on v0.8.1-debian) — the c0419ff regression persists; this bump does NOT
+# restore IRC. The [channels.irc] config stays inert (daemon logs "compiled without channel-irc").
 
 # Tool versions — bump these to update (or use Renovate)
 ARG KUBECTL_V=v1.36.0

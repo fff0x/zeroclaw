@@ -6,15 +6,24 @@ ARG CAT=zeroclaw
 ARG APP=zeroclaw
 
 # renovate: datasource=docker depName=ghcr.io/zeroclaw-labs/zeroclaw versioning=loose
-ARG ZEROCLAW_V=v0.8.1
-# v0.8.1 (2026-06-19) is a PATCH release on the v0.8.x line — schema stays V3 (no `config migrate`).
-# It keeps the b3e0719 fix (runtime_profiles.<p>.strict_tool_parsing) and adds the v0.8.1 doctor
-# multi-agent fix (#7544, closes the SOUL.md/AGENTS.md false-positive — Radicle issue aa4931e).
-# The v0.8.1-debian image is multi-arch (amd64 + arm64), verified, so the FROM below resolves on the
-# arm64 Turing-RK1 cluster. Do NOT use the floating `beta`/`beta-debian` tag (stale).
-# IRC: v0.8.1 release images STILL ship WITHOUT the `channel-irc` feature (verified 2026-06-22 via
-# `zeroclaw channel list` on v0.8.1-debian) — the c0419ff regression persists; this bump does NOT
-# restore IRC. The [channels.irc] config stays inert (daemon logs "compiled without channel-irc").
+ARG ZEROCLAW_V=v0.8.2
+# v0.8.2 (2026-06-26) is a feature+security release on the v0.8.x line — schema stays V3 (no
+# `config migrate`; no schema/migrate change in the release notes), so this is a clean bump from v0.8.1.
+# Highlights relevant to us:
+#   - Security: universal ingress-policy layer before model access, SSRF protection in plugin HTTP
+#     (DNS-rebinding bypass prevention), per-agent MCP tool scoping w/ denylist, delegate sub-tools run
+#     under the parent SecurityPolicy, per-alias plugin config isolation. (defense-in-depth — Radicle
+#     issues 49601e4 / bf84576).
+#   - SOP trigger-payload framing + sanitization for MQTT/webhook events, and a durable SQLite-backed
+#     run/task control plane — building blocks for the Alertmanager->ZeroClaw webhook path (issue 0d45430).
+#   - Matrix room-management tool restored; runtime-reloadable budget; per-call USD cost logging.
+# The v0.8.2-debian image is multi-arch (amd64 + arm64), verified 2026-06-26 via `crane manifest`, so
+# the FROM below resolves on the arm64 Turing-RK1 cluster. Do NOT use the floating `beta`/`beta-debian`
+# tag (stale).
+# IRC: v0.8.2 release notes do NOT mention `irc`/`channel-irc`, and the channel-update list enumerates
+# Discord/Slack/WhatsApp/Matrix/Lark but NOT IRC — so the c0419ff regression almost certainly persists
+# and this bump does NOT restore IRC. Confirm post-bump with `zeroclaw channel list` on v0.8.2-debian
+# (as done for v0.8.1); the [channels.irc] config stays inert until then.
 
 # Tool versions — bump these to update (or use Renovate)
 ARG KUBECTL_V=v1.36.0

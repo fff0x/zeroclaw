@@ -1,0 +1,145 @@
+---
+# ZeroClaw agent daemon + its Scrapling web-fetch MCP sidecar. This is a minimal,
+# self-contained example. The full lab deployment additionally wires a radicle
+# client-node, a Tailscale userspace proxy, and Talos/kube/SOPS credentials so the
+# agent can operate a cluster fleet — those are intentionally omitted here. Add them
+# as extra containers/secrets if you need them (see README "Optional integrations").
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: zeroclaw
+  labels:
+    app.kubernetes.io/name: zeroclaw
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: zeroclaw
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: zeroclaw
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "42617"
+        prometheus.io/path: /metrics
+    spec:
+      securityContext:
+        fsGroup: 1001
+        fsGroupChangePolicy: OnRootMismatch
+      initContainers:
+        # Render config.toml from the mounted template (envsubst fills $${VAR} from the
+        # zeroclaw-secrets env) and fix ownership on the data volume.
+        - name: init-config
+          image: alpine:3.21
+          envFrom:
+            - secretRef:
+                name: zeroclaw-secrets
+          command: [sh, -c]
+          args:
+            - |
+              set -eu
+              apk add --no-cache gettext >/dev/null 2>&1
+              mkdir -p /zeroclaw-data/.zeroclaw/agents/default/workspace
+              envsubst < /opt/zeroclaw/zeroclaw.toml > /zeroclaw-data/.zeroclaw/config.toml
+              chmod 600 /zeroclaw-data/.zeroclaw/config.toml
+              chown -R 1001:1001 /zeroclaw-data/.zeroclaw
+          volumeMounts:
+            - name: data
+              mountPath: /zeroclaw-data/.zeroclaw
+              subPath: state
+            - name: config
+              mountPath: /opt/zeroclaw/zeroclaw.toml
+              subPath: zeroclaw.toml
+              readOnly: true
+          resources:
+            requests: { cpu: 50m, memory: 64Mi }
+            limits: { memory: 256Mi }
+      containers:
+        - name: zeroclaw
+          image: oci.this-is-fine.io/zeroclaw/zeroclaw:latest
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            runAsUser: 1001
+            runAsGroup: 1001
+            runAsNonRoot: true
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: [ALL]
+          command: [sh, -c]
+          args:
+            - |
+              set -eu
+              echo "[zeroclaw] waiting for Scrapling MCP on 127.0.0.1:8000 ..."
+              for i in $(seq 1 60); do
+                code=$(curl -sS -o /dev/null -w '%{http_code}' \
+                  -X POST -H 'Content-Type: application/json' \
+                  -H 'Accept: application/json, text/event-stream' \
+                  -d '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"probe","version":"0.0"}}}' \
+                  http://127.0.0.1:8000/mcp 2>/dev/null || echo 000)
+                [ "$code" = "200" ] && break
+                sleep 1
+              done
+              echo "[zeroclaw] starting daemon"
+              exec zeroclaw daemon
+          env:
+            - name: SHELL
+              value: /bin/bash
+          envFrom:
+            - secretRef:
+                name: zeroclaw-secrets
+          livenessProbe:
+            httpGet: { path: /health, port: 42617 }
+            initialDelaySeconds: 20
+            periodSeconds: 20
+            failureThreshold: 3
+          readinessProbe:
+            httpGet: { path: /health, port: 42617 }
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            failureThreshold: 3
+          resources:
+            requests: { cpu: 250m, memory: 720Mi }
+            limits: { memory: 2Gi }
+          volumeMounts:
+            - name: data
+              mountPath: /zeroclaw-data/.zeroclaw
+              subPath: state
+        # Scrapling web-fetch MCP server (referenced by zeroclaw.toml).
+        - name: scrapling
+          # renovate: datasource=docker depName=pyd4vinci/scrapling
+          image: pyd4vinci/scrapling:latest@sha256:2a0c05bdd78211a76cb7ab9565a91250787a326f9ca73c97cf764ccb536631a2
+          imagePullPolicy: IfNotPresent
+          args: ["mcp", "--http", "--host", "0.0.0.0", "--port", "8000"]
+          securityContext:
+            allowPrivilegeEscalation: false
+          ports:
+            - name: mcp
+              containerPort: 8000
+              protocol: TCP
+          readinessProbe:
+            tcpSocket: { port: 8000 }
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket: { port: 8000 }
+            initialDelaySeconds: 15
+            periodSeconds: 30
+            failureThreshold: 3
+          startupProbe:
+            tcpSocket: { port: 8000 }
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            failureThreshold: 12
+          resources:
+            requests: { cpu: 100m, memory: 512Mi }
+            limits: { cpu: "1", memory: 1536Mi }
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: zeroclaw-data
+        - name: config
+          configMap:
+            name: zeroclaw-config

@@ -1,0 +1,15 @@
+---
+# Agent state: rendered config, per-agent workspace, memory, and the markdown memory
+# store. Persisting this keeps the agent's memory + sessions across restarts.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: zeroclaw-data
+  labels:
+    app.kubernetes.io/name: zeroclaw
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi

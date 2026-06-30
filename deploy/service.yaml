@@ -1,0 +1,17 @@
+---
+# Health + Prometheus metrics endpoint. The Scrapling MCP (:8000) stays pod-internal.
+apiVersion: v1
+kind: Service
+metadata:
+  name: zeroclaw
+  labels:
+    app.kubernetes.io/name: zeroclaw
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: zeroclaw
+  ports:
+    - name: http
+      port: 42617
+      targetPort: 42617
+      protocol: TCP

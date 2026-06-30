@@ -1,0 +1,73 @@
+# ZeroClaw config — schema V3 (v0.8.0). A minimal, single-agent example. The init
+# container renders this through envsubst ($${VAR} -> ${VAR} from the Secret) into
+# /zeroclaw-data/.zeroclaw/config.toml. Extend with cron jobs, more channels, and
+# tool integrations as needed.
+schema_version = 3
+config_path = "/zeroclaw-data/.zeroclaw/config.toml"
+default_provider = "ollama"
+
+[providers.models.ollama.default]
+api_key = "$${OLLAMA_API_KEY}"
+name = "ollama"
+model = "kimi-k2.5:cloud"
+think = false
+uri = "https://ollama.com"
+
+# Matrix chat channel (optional — disable if you only want cron/headless use).
+[channels.matrix.default]
+access_token = "$${MATRIX_ACCESS_TOKEN}"
+allowed_rooms = ["$${MATRIX_ALLOWED_ROOM}"]
+device_id = "$${MATRIX_DEVICE_ID}"
+enabled = true
+homeserver = "$${MATRIX_HOMESERVER}"
+password = "$${MATRIX_PASSWORD}"
+recovery_key = "$${MATRIX_RECOVERY_KEY}"
+stream_mode = "off"
+user_id = "$${MATRIX_USER_ID}"
+
+# Scrapling web-fetch MCP server runs as a sidecar in this pod.
+[[mcp.servers]]
+name = "scrapling"
+tool_timeout_secs = 120
+transport = "http"
+url = "http://127.0.0.1:8000/mcp"
+
+[agents.default]
+model_provider = "ollama.default"
+risk_profile = "default"
+runtime_profile = "default"
+channels = ["matrix.default"]
+cron_jobs = []
+
+[risk_profiles.default]
+level = "full"
+allowed_commands = ["*", "bash", "sh", "cat", "curl", "echo", "git", "grep", "jq", "ls", "rg"]
+allowed_roots = ["/zeroclaw-data", "/tmp", "/usr/local/bin", "/bin", "/usr/bin", "/etc/ssl"]
+auto_approve = ["file_read", "memory_recall", "shell"]
+sandbox_enabled = true
+sandbox_backend = "auto"
+workspace_only = false
+
+[runtime_profiles.default]
+strict_tool_parsing = true
+compact_context = true
+max_context_tokens = 128000
+max_tool_iterations = 20
+shell_timeout_secs = 300
+
+[mcp]
+enabled = true
+
+[memory]
+backend = "markdown"
+auto_save = true
+
+[gateway]
+host = "[::]"
+allow_public_bind = true
+require_pairing = false
+
+[scheduler]
+enabled = true
+
+[cron]

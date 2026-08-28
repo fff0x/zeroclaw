@@ -1,20 +1,20 @@
 # syntax=docker/dockerfile:1
 # Dockerfile version: 0.0.18
 
-# Image identity (read by .radicle/build.sh) — published as ${CAT}/${APP}
+# Image identity consumed by the shared `ci-build` pipeline — published as ${CAT}/${APP}
 ARG CAT=zeroclaw
 ARG APP=zeroclaw
 
 # renovate: datasource=docker depName=ghcr.io/zeroclaw-labs/zeroclaw versioning=loose
-ARG ZEROCLAW_V=v0.8.1
-# v0.8.1 (2026-06-19) is a PATCH release on the v0.8.x line — schema stays V3 (no `config migrate`).
-# It keeps the b3e0719 fix (runtime_profiles.<p>.strict_tool_parsing) and adds the v0.8.1 doctor
-# multi-agent fix (#7544, closes the SOUL.md/AGENTS.md false-positive — Radicle issue aa4931e).
-# The v0.8.1-debian image is multi-arch (amd64 + arm64), verified, so the FROM below resolves on the
-# arm64 Turing-RK1 cluster. Do NOT use the floating `beta`/`beta-debian` tag (stale).
-# IRC: v0.8.1 release images STILL ship WITHOUT the `channel-irc` feature (verified 2026-06-22 via
-# `zeroclaw channel list` on v0.8.1-debian) — the c0419ff regression persists; this bump does NOT
-# restore IRC. The [channels.irc] config stays inert (daemon logs "compiled without channel-irc").
+ARG ZEROCLAW_V=v0.8.4
+# v0.8.4 is a PATCH release on the v0.8.x line — schema stays V3 (no `config migrate`). It adds
+# hardened OpenAI Responses/subscription handling, usage propagation, task-attributed cost records,
+# fallback visibility, and provider/runtime fixes needed by the cluster's GPT-5.6 Terra route.
+# The v0.8.4-debian image is multi-arch (amd64 + arm64), verified from its OCI index. Do NOT use
+# floating beta tags.
+# IRC remains absent from the standard v0.8.4-debian feature set (`zeroclaw channel list` has no IRC),
+# so the configured IRC channel stays inert until upstream ships it or this wrapper switches to a
+# source build with `channel-irc`.
 
 # Tool versions — bump these to update (or use Renovate)
 ARG KUBECTL_V=v1.36.0

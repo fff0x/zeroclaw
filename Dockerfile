@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1
-# Dockerfile version: 0.0.18
+# Dockerfile version: 0.0.19
 
 # Image identity consumed by the shared `ci-build` pipeline — published as ${CAT}/${APP}
 ARG CAT=zeroclaw

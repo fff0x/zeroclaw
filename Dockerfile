@@ -1,11 +1,10 @@
 # syntax=docker/dockerfile:1
-# Dockerfile version: 0.0.20
+# Dockerfile version: 0.0.21
 
 # Image identity consumed by the shared `ci-build` pipeline — published as ${CAT}/${APP}
 ARG CAT=zeroclaw
 ARG APP=zeroclaw
 
-# renovate: datasource=docker depName=ghcr.io/zeroclaw-labs/zeroclaw versioning=loose
 ARG ZEROCLAW_V=v0.8.5
 # v0.8.5 stays on the v0.8.x line — schema remains V3 (no `config migrate`). Over v0.8.4 it adds
 # ZeroRelay/ZeroRouter transport, tighter plugin/sandbox/webhook/credential boundaries (Landlock
@@ -19,7 +18,7 @@ ARG ZEROCLAW_V=v0.8.5
 # channel stays inert until upstream ships it in the debian image or this wrapper switches to a
 # source build with `channel-irc`.
 
-# Tool versions — bump these to update (or use Renovate)
+# Tool versions — bump these manually to update (Renovate removed).
 ARG KUBECTL_V=v1.36.0
 ARG FLUX_V=v2.8.6
 ARG HELM_V=v4.1.4
@@ -30,15 +29,9 @@ ARG JQ_V=jq-1.8.1
 ARG SKOPEO_V=v1.20.1
 ARG CRANE_V=v0.21.5
 ARG COSIGN_V=v2.5.0
-# renovate: datasource=docker depName=ghcr.io/siderolabs/installer
 ARG TALOSCTL_V=v1.13.3
-# renovate: datasource=github-releases depName=cilium/cilium-cli
 ARG CILIUM_CLI_V=v0.19.4
-# renovate: datasource=github-releases depName=go-task/task
 ARG TASK_V=v3.51.1
-# renovate: datasource=npm depName=renovate
-ARG RENOVATE_V=40.55.0
-# renovate: datasource=github-releases depName=radicle-dev/radicle
 ARG RADICLE_V=1.9.1
 
 # Stage 1: Download tools
@@ -124,14 +117,6 @@ RUN arch="$(case "${TARGETARCH}" in amd64) echo x86_64 ;; arm64) echo aarch64 ;;
   && rad --version \
   && test -x /usr/local/bin/git-remote-rad
 
-# Stage 1c: Renovate (Node)
-FROM docker.io/library/node:22-bookworm-slim AS renovate
-
-ARG RENOVATE_V
-
-RUN npm install -g "renovate@${RENOVATE_V}" \
-  && renovate --version
-
 # Stage 2: Final image
 FROM ghcr.io/zeroclaw-labs/zeroclaw:${ZEROCLAW_V}-debian
 
@@ -157,12 +142,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY --from=tools /tools/ /usr/local/bin/
 COPY --from=radicle /usr/local/bin/rad /usr/local/bin/git-remote-rad /usr/local/bin/radicle-node /usr/local/bin/
 COPY --from=radicle /usr/local/share/man /usr/local/share/man
-COPY --from=renovate /usr/local/bin/node /usr/local/bin/node
-COPY --from=renovate /usr/local/lib/node_modules /usr/local/lib/node_modules
-# Symlink renovate CLIs (dist/, not bin/ — npm global layout)
-RUN ln -sf ../lib/node_modules/renovate/dist/renovate.js /usr/local/bin/renovate \
-  && ln -sf ../lib/node_modules/renovate/dist/config-validator.js /usr/local/bin/renovate-config-validator \
-  && renovate --version
 
 COPY hooks/pre-push /opt/zeroclaw/hooks/pre-push
 RUN chmod 755 /opt/zeroclaw/hooks/pre-push

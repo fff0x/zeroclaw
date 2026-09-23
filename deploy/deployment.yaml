@@ -109,7 +109,6 @@ spec:
               subPath: state
         # Scrapling web-fetch MCP server (referenced by zeroclaw.toml).
         - name: scrapling
-          # renovate: datasource=docker depName=pyd4vinci/scrapling
           image: pyd4vinci/scrapling:latest@sha256:2a0c05bdd78211a76cb7ab9565a91250787a326f9ca73c97cf764ccb536631a2
           imagePullPolicy: IfNotPresent
           args: ["mcp", "--http", "--host", "0.0.0.0", "--port", "8000"]

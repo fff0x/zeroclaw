@@ -1,19 +1,22 @@
 # syntax=docker/dockerfile:1
-# Dockerfile version: 0.0.19
+# Dockerfile version: 0.0.20
 
 # Image identity consumed by the shared `ci-build` pipeline — published as ${CAT}/${APP}
 ARG CAT=zeroclaw
 ARG APP=zeroclaw
 
 # renovate: datasource=docker depName=ghcr.io/zeroclaw-labs/zeroclaw versioning=loose
-ARG ZEROCLAW_V=v0.8.4
-# v0.8.4 is a PATCH release on the v0.8.x line — schema stays V3 (no `config migrate`). It adds
-# hardened OpenAI Responses/subscription handling, usage propagation, task-attributed cost records,
-# fallback visibility, and provider/runtime fixes needed by the cluster's GPT-5.6 Terra route.
-# The v0.8.4-debian image is multi-arch (amd64 + arm64), verified from its OCI index. Do NOT use
+ARG ZEROCLAW_V=v0.8.5
+# v0.8.5 stays on the v0.8.x line — schema remains V3 (no `config migrate`). Over v0.8.4 it adds
+# ZeroRelay/ZeroRouter transport, tighter plugin/sandbox/webhook/credential boundaries (Landlock
+# allowed_roots tiers, fail-closed webhook ingress), Matrix single-message progress drafts, and
+# broad provider/runtime hardening. None of the Breaking Changes touch this deployment (they cover
+# plugins, ClawHub skill sources, the legacy [node_transport], TodoWrite→ZeroCode, and WATI).
+# The v0.8.5-debian image is multi-arch (amd64 + arm64), verified from its OCI index. Do NOT use
 # floating beta tags.
-# IRC remains absent from the standard v0.8.4-debian feature set (`zeroclaw channel list` has no IRC),
-# so the configured IRC channel stays inert until upstream ships it or this wrapper switches to a
+# IRC remains absent from the standard v0.8.5-debian feature set: the upstream Dockerfile.debian
+# builds without `channel-irc` (it lives only in the `channels-full` bundle), so the configured IRC
+# channel stays inert until upstream ships it in the debian image or this wrapper switches to a
 # source build with `channel-irc`.
 
 # Tool versions — bump these to update (or use Renovate)

@@ -1,19 +1,21 @@
 # syntax=docker/dockerfile:1
-# Dockerfile version: 0.0.21
+# Dockerfile version: 0.0.22
 
 # Image identity consumed by the shared `ci-build` pipeline — published as ${CAT}/${APP}
 ARG CAT=zeroclaw
 ARG APP=zeroclaw
 
-ARG ZEROCLAW_V=v0.8.5
-# v0.8.5 stays on the v0.8.x line — schema remains V3 (no `config migrate`). Over v0.8.4 it adds
-# ZeroRelay/ZeroRouter transport, tighter plugin/sandbox/webhook/credential boundaries (Landlock
-# allowed_roots tiers, fail-closed webhook ingress), Matrix single-message progress drafts, and
-# broad provider/runtime hardening. None of the Breaking Changes touch this deployment (they cover
-# plugins, ClawHub skill sources, the legacy [node_transport], TodoWrite→ZeroCode, and WATI).
-# The v0.8.5-debian image is multi-arch (amd64 + arm64), verified from its OCI index. Do NOT use
-# floating beta tags.
-# IRC remains absent from the standard v0.8.5-debian feature set: the upstream Dockerfile.debian
+ARG ZEROCLAW_V=v0.9.0
+# v0.8.5 -> v0.9.0: runtime-only bump, tool pins unchanged. v0.9.0 requires config schema
+# V4 (`zeroclaw config migrate`; the lab template is migrated in the same change). Relevant
+# upstream changes: matrix-sdk 0.19 + vodozemac 0.11.2 security fixes; optional tools are now
+# gated ([tools].optional, template sets ["*"]); peer_groups gain output_modality (template
+# pins "text"); SQLite stores with group/world bits or foreign uid are refused (init tightens
+# modes before the daemon starts); pairing codes are 32 chars by default (old shape via
+# [gateway.pairing_code]); [security.nevis] and the agent-inline tunables are retired.
+# The v0.9.0-debian image is multi-arch (amd64 + arm64), verified from its OCI index.
+# Do NOT use floating beta tags.
+# IRC remains absent from the v0.9.0-debian feature set: the upstream Dockerfile.debian
 # builds without `channel-irc` (it lives only in the `channels-full` bundle), so the configured IRC
 # channel stays inert until upstream ships it in the debian image or this wrapper switches to a
 # source build with `channel-irc`.
